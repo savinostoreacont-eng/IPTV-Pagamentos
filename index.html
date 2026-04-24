@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IPTV Pagamentos | Checkout Seguro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -278,9 +279,9 @@
                                     </div>
                                 </div>
 
-                                <button onclick="window.print()" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2">
-                                    <i class="fas fa-download"></i> Baixar Comprovante
-                                </button>
+                                <button onclick="baixarComprovante('${data.transaction.transactionId}','${data.transaction.value}','${selectedPlanName}')" class="w-full bg-white/10 hover:bg-white/20 py-3 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2">
+    <i class="fas fa-download"></i> Baixar Comprovante
+</button>
                             </div>
                         `;
                     }
@@ -288,6 +289,27 @@
                     console.error("Erro ao verificar status:", e);
                 }
             }, 5000);
+
+            function baixarComprovante(id, valor, plano) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+
+    doc.setFontSize(18);
+    doc.text("Comprovante de Pagamento", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(`Plano: ${plano}`, 20, 40);
+    doc.text(`ID: ${id}`, 20, 50);
+    doc.text(`Valor: R$ ${valor}`, 20, 60);
+    doc.text(`Data: ${dataAtual}`, 20, 70);
+
+    doc.text("Pagamento aprovado com sucesso.", 20, 90);
+
+    doc.save("comprovante.pdf");
+                
+            }
         }
     </script>
 
