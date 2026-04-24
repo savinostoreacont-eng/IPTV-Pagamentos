@@ -1,4 +1,6 @@
 export default async function handler(req, res) {
+  const { valor } = req.body;
+
   const response = await fetch("https://api.misticpay.com/api/transactions/create", {
     method: "POST",
     headers: {
@@ -7,7 +9,7 @@ export default async function handler(req, res) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      amount: 25,
+      amount: valor,
       payerName: "Cliente",
       payerDocument: "12345678909",
       transactionId: "tx-" + Date.now(),
