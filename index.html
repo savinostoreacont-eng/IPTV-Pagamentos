@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Pagamento IPTV</title>
+</head>
+<body style="font-family: Arial; text-align:center; padding:20px;">
+
+  <h1>Comprar IPTV</h1>
+  <p>Plano mensal - R$ 25</p>
+
+  <button onclick="pagar()">Pagar com Pix</button>
+
+  <div id="conteudo" style="margin-top:20px;"></div>
+
+  <script>
+    let transactionId;
+
+    async function pagar() {
+      document.getElementById("conteudo").innerHTML = "Gerando pagamento...";
+
+      const res = await fetch("/api/criar-pix", {
+        method: "POST"
+      });
+
+      const data = await res.json();
+
+      transactionId = data.data.transactionId;
+
+      document.getElementById("conteudo").innerHTML = `
+        <h3>Escaneie o QR Code</h3>
+        <img src="${data.data.qrcodeUrl}" width="200"/>
+
+        <h3>Ou copie o código Pix</h3>
+        <textarea id="pixCode" style="width:100%;height:80px;">${data.data.copyPaste}</textarea>
+
+        <button onclick="copiarPix()">📋 Copiar código Pix</button>
+        <p id="status">Aguardando pagamento...</p>
+      `;
+
+      verificarPagamento();
+    }
+
+    function copiarPix() {
+      const codigo = document.getElementById("pixCode").value;
+
+      navigator.clipboard.writeText(codigo).then(() => {
+        alert("Copiado com sucesso!");
+      });
+    }
+
+    async function verificarPagamento() {
+      const intervalo = setInterval(async () => {
+        const res = await fetch("/api/verificar", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ transactionId })
+        });
+
+        const data = await res.json();
+
+        if (data.transaction.transactionState === "COMPLETO") {
+          clearInterval(intervalo);
+
+          document.getElementById("conteudo").innerHTML = `
+            <h2>Pagamento aprovado ✅</h2>
+            <p>ID: ${data.transaction.transactionId}</p>
+            <p>Valor: R$ ${data.transaction.value}</p>
+            <button onclick="window.print()">Baixar comprovante</button>
+          `;
+        }
+      }, 5000);
+    }
+  </script>
+
+</body>
+</html>
